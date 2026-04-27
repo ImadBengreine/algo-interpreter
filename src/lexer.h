@@ -1,0 +1,42 @@
+#ifndef LEXER_H
+#define LEXER_H
+
+typedef enum
+{
+	TOKEN_ALGORITHME,
+	TOKEN_DEBUT,
+	TOKEN_FIN,
+	TOKEN_ECRIRE,
+	TOKEN_SI,
+	TOKEN_SINON,
+	TOKEN_FINSI,
+	TOKEN_ALORS,
+	TOKEN_IDENT,
+	TOKEN_NUMBER,
+	TOKEN_STRING,
+	TOKEN_PLUS,
+	TOKEN_MINUS,
+	TOKEN_SLASH,
+	TOKEN_STAR,
+	TOKEN_NEWLINE,
+	TOKEN_LPAREN,
+	TOKEN_RPAREN,
+	TOKEN_EQUAL,
+	TOKEN_GT,
+	TOKEN_LT,
+	TOKEN_GTE,
+	TOKEN_LTE,
+	TOKEN_EQEQ,
+	TOKEN_NEQ,
+	TOKEN_ASSIGN,  // <-
+
+} TokenType;
+
+typedef struct
+{
+	TokenType type;
+	char* value;
+
+} Token;
+
+#endif
