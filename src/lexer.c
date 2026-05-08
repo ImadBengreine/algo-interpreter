@@ -4,7 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
-Lexer lexer_init(char *source) {
+Lexer lexer_init(const char *source) {
 	Lexer lexer;
 	lexer.source = source;
 	lexer.pos = 0;
@@ -14,24 +14,29 @@ Lexer lexer_init(char *source) {
 }
 
 char current_char(Lexer* lexer) {
-	lexer->source[lexer->pos];
+	return lexer->source[lexer->pos];
 }
 
 void advance(Lexer* lexer) {
-	if (current_char() == '\n')
+	if (current_char(lexer) == '\n')
 	{
 		lexer->line++;
+		lexer->column = 1;
 	}
+	else {
+		lexer->column++;
+	}
+
 	lexer->pos++;
 }
 
 // Ignore les espaces, tabulations, sauts de ligne
 void skip_whitespace(Lexer* lexer) {
-	while (current_char() == ' '  || 
-           current_char() == '\t' || 
-           current_char() == '\n' || 
-           current_char() == '\r') {
-		advance();
+	while (current_char(lexer) == ' '  || 
+           current_char(lexer) == '\t' || 
+           current_char(lexer) == '\n' || 
+           current_char(lexer) == '\r') {
+		advance(lexer);
 	}
 }
 
@@ -45,26 +50,55 @@ TokenType check_keyword(const char* word) {
 }
 
 Token get_next_token(Lexer* lexer) {
-	skip_whitespace();
+	skip_whitespace(lexer);
 
 	Token tok;
 	tok.line = lexer->line;
 	tok.value[0] = '\0';
 
-	if (current_char() == '\0') {
+	if (current_char(lexer) == '\0') {
 		tok.type = TOKEN_EOF;
 		strcpy(tok.value, "EOF");
 		return tok;
 	}
 
-	if (isalpha(current_char())) {
+	if (isalpha(current_char(lexer))) {
 		int i = 0;
-		while (isalnum(current_char()) || current_char() == '_') {
-			tok.value[i++] = current_char();
-			advance();
+		while (isalnum(current_char(lexer)) || current_char(lexer) == '_') {
+			tok.value[i++] = current_char(lexer);
+			advance(lexer);
 		}
 		tok.value[i] = '\0';
 		tok.type = check_keyword(tok.value);
 		return tok;
 	}
+
+	if (current_char(lexer) == '"') {
+		advance(lexer);
+		int i = 0;
+		while (current_char(lexer) != '"' && current_char(lexer) != '\0') {
+			tok.value[i++] = current_char(lexer);
+            advance(lexer);
+		}
+		tok.value[i] = '\0';
+		if (current_char(lexer) == '"') {
+			advance(lexer);
+		}
+
+		tok.type = TOKEN_STRING;
+		return tok;
+	}
+
+	char c = current_char(lexer);
+	advance(lexer);
+	tok.value[0] = c;
+    tok.value[1] = '\0';
+
+    switch (c) {
+    	case '(': tok.type = TOKEN_LPAREN;	break;
+    	case ')': tok.type = TOKEN_RPAREN;	break;
+    	case ';': tok.type = TOKEN_SEMICOLON;	break;
+    	default: tok.type = TOKEN_UNKNOWN;	break;
+    }
+    return tok;
 }
